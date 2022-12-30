@@ -19,8 +19,8 @@ DATALENGTH=10
 
 def main():
     # 0 : Normal Messaging between computers
-    # 1 : Computer wrong message check
-    # 2 : Computer wrong sequence check
+    # 1 : Computer wrong message check 55. satirda aciklama var
+    # 2 : Computer wrong sequence check 58. satirda aciklama var
     testValue=2
 
     #init
@@ -55,17 +55,16 @@ class Computer:
         if self.LastSentMessage.seq+self.LastSentMessage.dl != m.ack: # eger son gonderdigim mesajın seq+dl'si gelen mesajın ack'ine eşit değilse GIDEMEMIS VEYA HATA YAPILMIS
             print(f"Received ack:{m.ack}. Should be:{self.LastSentMessage.seq+self.LastSentMessage.dl}")
             self.seqError=True
-        if self.LastSentMessage.ack != m.seq: # Gonderdigim ack'e gelen seq cevabi yanlis.
+        if self.LastSentMessage.ack != m.seq: # Gonderdigim ack'e gelen seq cevabi yanlis. -> Karsinin puanini dusurucek
             print(f"Sent ack:{self.LastSentMessage.ack} not equal to received seq:{m.seq}")
-            
         
 
     def receiveMessage(self,m):
         print('\n'+self.name)
         self.checkMessage(m)
-        if not self.seqError:
+        if not self.seqError: # error yoksa yeni mesaji yolla
             newm = message(m.ack, m.seq + m.dl, self.dl)
-        else:
+        else: # yanlis geldiyse eski mesajda gitmesi gereken seq ve dl'i tekrar yolla
             newm = message(self.LastSentMessage.seq,m.seq+m.dl,self.LastSentMessage.dl)
         self.LastSentMessage=newm
         print(f"Sending Message SEQ:{newm.seq} ACK:{newm.ack} DL:{newm.dl}")
