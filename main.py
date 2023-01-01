@@ -1,4 +1,5 @@
 import time
+import re
  
 """ NOTLAR
     Packeti aldiktan sonra corrupted mi degil mi? Ona gore seq-ack
@@ -8,8 +9,6 @@ import time
 """
 
 """ GEREKTIGINDE ACILACAK SU AN ISE YARAMIYORLAR
-autoMode = True #Auto veya manual
-
 # 5 puandan baslayacaklar, hata yapanin puani dusecek
 CLIENTHEALTH=5
 SERVERHEALTH=5
@@ -52,11 +51,11 @@ class Computer:
     def checkMessage(self,m):
         if m.dl != 0:
             print(f"ReceivedMessage SEQ:{m.seq} ACK:{m.ack} DL:{m.dl}")
-        if self.LastSentMessage.seq+self.LastSentMessage.dl != m.ack: # eger son gonderdigim mesajın seq+dl'si gelen mesajın ack'ine eşit değilse GIDEMEMIS VEYA HATA YAPILMIS
+        """if self.LastSentMessage.seq+self.LastSentMessage.dl != m.ack: # eger son gonderdigim mesajın seq+dl'si gelen mesajın ack'ine eşit değilse GIDEMEMIS VEYA HATA YAPILMIS
             print(f"Received ack:{m.ack}. Should be:{self.LastSentMessage.seq+self.LastSentMessage.dl}")
             self.seqError=True
         if self.LastSentMessage.ack != m.seq: # Gonderdigim ack'e gelen seq cevabi yanlis. -> Karsinin puanini dusurucek
-            print(f"Sent ack:{self.LastSentMessage.ack} not equal to received seq:{m.seq}")
+            print(f"Sent ack:{self.LastSentMessage.ack} not equal to received seq:{m.seq}")"""
         
 
     def receiveMessage(self,m):
@@ -70,6 +69,12 @@ class Computer:
         print(f"Sending Message SEQ:{newm.seq} ACK:{newm.ack} DL:{newm.dl}")
         return newm
 
+    def stringToMessage(self,s):
+        seq=re.findall('(?<=q:)\d+',s)[0]
+        ack=re.findall('(?<=k:)\d+',s)[0]
+        dl =re.findall('(?<=l:)\d+',s)[0]
+        return message(seq,ack,dl)
+
 class User:
     def __init__(self):
         pass
@@ -82,5 +87,9 @@ class message:
         self.dl=dl
         #pcktlen random olabilir ya da fix secilebilir, şimdilik fixed
 
+    def __str__(self):
+        return 'seq:{}ack:{}dl:{}'.format(self.seq,self.ack,self.dl)
+
 if __name__=='__main__':
-    main()
+    c=Computer('TEST')
+    c.stringToMessage('seq:30ack:25dl:10')

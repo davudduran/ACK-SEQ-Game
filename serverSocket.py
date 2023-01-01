@@ -1,4 +1,6 @@
 import socket
+import main
+import pickle
 
 def Main():
 
@@ -7,17 +9,19 @@ def Main():
 
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind((host, port))
-
-    print("Server Started")
+    c = main.Computer('ServerTest',77)
+    print("Server Started\nWaiting for client to start conversation.")
     while True:
+        #GET MESSAGE
         data, addr = s.recvfrom(1024)
-        data = data.decode('utf-8')
+        data = pickle.loads(data)
         print("From: " + str(addr))
-        print("Message: " + data)
-        data = input("-> ")
-        #print("Sending: " + data)
-        s.sendto(data.encode('utf-8'), addr)
-    c.close()
+        main.time.sleep(0.5)
+        #CREATE ANSWER
+        m = c.receiveMessage(data)
+        m = pickle.dumps(m)
+        s.sendto(m, addr)
+    s.close()
 
 if __name__=='__main__':
     Main()
