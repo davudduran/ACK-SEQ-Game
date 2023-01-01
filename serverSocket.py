@@ -9,7 +9,7 @@ def Main():
 
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind((host, port))
-    c = main.Computer('ServerTest',77)
+    c = main.Computer('Server',77)
     print("Server Started\nWaiting for client to start conversation.")
     while True:
         #GET MESSAGE

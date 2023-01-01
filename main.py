@@ -1,5 +1,4 @@
 import time
-import re
  
 """ NOTLAR
     Packeti aldiktan sonra corrupted mi degil mi? Ona gore seq-ack
@@ -14,9 +13,14 @@ CLIENTHEALTH=5
 SERVERHEALTH=5
 """
 DATALENGTH=10
+TFMap = {'1':False,
+         '2':True,
+         't':True,
+         'f':False,
+         'y':True,
+         'n':False,}
 
-
-def main():
+def main(): # ISE YARAMAZ SU ANDA
     # 0 : Normal Messaging between computers
     # 1 : Computer wrong message check 55. satirda aciklama var
     # 2 : Computer wrong sequence check 58. satirda aciklama var
@@ -69,15 +73,18 @@ class Computer:
         print(f"Sending Message SEQ:{newm.seq} ACK:{newm.ack} DL:{newm.dl}")
         return newm
 
-    def stringToMessage(self,s):
-        seq=re.findall('(?<=q:)\d+',s)[0]
-        ack=re.findall('(?<=k:)\d+',s)[0]
-        dl =re.findall('(?<=l:)\d+',s)[0]
-        return message(seq,ack,dl)
-
 class User:
     def __init__(self):
-        pass
+        self.LastSentMessage = message(0,0,0)
+        self.LastReceivedMessage = message(0,0,0)
+
+    def receiveMessage(self,m):
+        print(f"\nReceivedMessage SEQ:{m.seq} ACK:{m.ack} DL:{m.dl}")
+        isCorrect = TFMap.get(input('Is that response correct?Y\N \n').lower()) # Her cevaptan sonra True/False istedi hoca puan kontrolu icin 01:14:45'te
+        seq = int(input("Seq: "))
+        ack = int(input('Ack: '))
+        dl  = int(input("DLn: "))
+        return message(seq,ack,dl)
 
 
 class message:
@@ -85,11 +92,9 @@ class message:
         self.seq=seq
         self.ack=ack
         self.dl=dl
-        #pcktlen random olabilir ya da fix secilebilir, şimdilik fixed
 
     def __str__(self):
         return 'seq:{}ack:{}dl:{}'.format(self.seq,self.ack,self.dl)
 
 if __name__=='__main__':
     c=Computer('TEST')
-    c.stringToMessage('seq:30ack:25dl:10')
