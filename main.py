@@ -1,6 +1,7 @@
 import time
 import sys
 import inputimeout
+import random
  
 """ NOTLAR
     Packeti aldiktan sonra corrupted mi degil mi? Ona gore seq-ack
@@ -67,12 +68,16 @@ class Computer:
     def receiveMessage(self,m):
         print('\n'+self.name)
         self.checkMessage(m)
-        if not self.seqError: # error yoksa yeni mesaji yolla
+        randResult = random.randint(0,9)
+        if randResult==5: # BEN MESAJINI ALMADIM ACK ARTMAYACAK
+            newm = message(m.ack,self.LastSentMessage.ack,self.dl)
+        #elif randResult==9: # TIMEOUT ATCAK AFK TAKILCAK MESAJ YOK # SU AN CALISTIRAMADIGIMIZ ICIN COMMENT
+        else:
             newm = message(m.ack, m.seq + m.dl, self.dl)
-        else: # yanlis geldiyse eski mesajda gitmesi gereken seq ve dl'i tekrar yolla
-            newm = message(self.LastSentMessage.seq,m.seq+m.dl,self.LastSentMessage.dl)
+
         self.LastSentMessage=newm
         print(f"Sending Message SEQ:{newm.seq} ACK:{newm.ack} DL:{newm.dl}")
+        self.LastReceivedMessage=m
         return newm
 
 class User:
@@ -82,13 +87,23 @@ class User:
 
     def receiveMessage(self,m):
         print(f"\nReceivedMessage SEQ:{m.seq} ACK:{m.ack} DL:{m.dl}")
-        isCorrect = TFMap.get(input('Is that response correct?Y\\N \n')) # Her cevaptan sonra True/False istedi hoca puan kontrolu icin 01:14:45'te
+        correctAnswer = message(self.LastSentMessage.ack,self.LastSentMessage.seq+self.LastSentMessage.dl,80)
+        isCorrect = TFMap.get(input('Is that response correct?Y\\N \n').lower()) # Her cevaptan sonra True/False istedi hoca puan kontrolu icin 01:14:45'te
+        if isCorrect and correctAnswer.seq != m.seq:
+            print(f"Wrong, sequence number should be {correctAnswer.seq}.")
+        if not isCorrect and correctAnswer.seq == m.seq and correctAnswer.ack == m.ack:
+            print('Wrong, answer was correct')
+        elif isCorrect and correctAnswer.ack != m.ack:
+            print(f'Wrong, ack was supposed to be {correctAnswer.ack}')
         try:
-            seq,ack,dl = map(int, inputimeout.inputimeout(prompt='Enter Seq Ack Dl\nFormat: SS AA DD: ', timeout=3).split(' '))
+            seq,ack,dl = map(int, inputimeout.inputimeout(prompt='Enter Seq Ack Dl\nFormat: SS AA DD: ', timeout=60).split(' '))
+            self.LastSentMessage=message(seq,ack,dl)
+            return self.LastSentMessage
         except inputimeout.TimeoutOccurred:
             print('Sorry, times up') # PUAN KAYBEDECEK
         else:
-            return message(seq,ack,dl)
+            pass
+            
         
 
 class message:
