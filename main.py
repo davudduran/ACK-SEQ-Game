@@ -1,6 +1,6 @@
 import time
 import sys
-import msvcrt
+import inputimeout
  
 """ NOTLAR
     Packeti aldiktan sonra corrupted mi degil mi? Ona gore seq-ack
@@ -84,8 +84,8 @@ class User:
         print(f"\nReceivedMessage SEQ:{m.seq} ACK:{m.ack} DL:{m.dl}")
         isCorrect = TFMap.get(input('Is that response correct?Y\\N \n')) # Her cevaptan sonra True/False istedi hoca puan kontrolu icin 01:14:45'te
         try:
-            seq,ack,dl = map(int, input_with_timeout('Enter Seq Ack Dl\nFormat: SS AA DD: ', 15).split(' '))
-        except TimeoutExpired:
+            seq,ack,dl = map(int, inputimeout.inputimeout(prompt='Enter Seq Ack Dl\nFormat: SS AA DD: ', timeout=3).split(' '))
+        except inputimeout.TimeoutOccurred:
             print('Sorry, times up') # PUAN KAYBEDECEK
         else:
             return message(seq,ack,dl)
@@ -99,22 +99,6 @@ class message:
 
     def __str__(self):
         return 'seq:{}ack:{}dl:{}'.format(self.seq,self.ack,self.dl)
-
-class TimeoutExpired(Exception):
-    pass
-
-def input_with_timeout(prompt, timeout, timer=time.monotonic):
-    sys.stdout.write(prompt)
-    sys.stdout.flush()
-    endtime = timer() + timeout
-    result = []
-    while timer() < endtime:
-        if msvcrt.kbhit():
-            result.append(msvcrt.getwche()) #XXX can it block on multibyte characters?
-            if result[-1] == '\r':
-                return ''.join(result[:-1])
-        time.sleep(0.04) # just to yield to other processes/threads
-    raise TimeoutExpired
 
 if __name__=='__main__':
     c=Computer('TEST')
