@@ -17,11 +17,21 @@ def Main():
         data = pickle.loads(data)
         print("From: " + str(addr))
         main.time.sleep(0.5)
+
         #CREATE ANSWER
         m = c.receiveMessage(data)
         m = pickle.dumps(m)
         s.sendto(m, addr)
-    s.close()
+
+        
+        if data.syn == 1:
+            c.points = 5
+            a = main.message(0, 0, 0, 1)
+            a = pickle.dumps(a)
+            s.sendto(a, addr)
+            break
+
+    s.shutdown(socket.SHUT_RDWR)
 
 if __name__=='__main__':
     Main()
