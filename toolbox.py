@@ -24,7 +24,8 @@ class Computer:
         if m.dl != 0:
             print(f"ReceivedMessage SEQ:{m.seq} ACK:{m.ack} DL:{m.dl}")
         #self.checkMessage(m)
-        randResult = random.randint(0,4)
+        #randResult = random.randint(0,4)
+        randResult = 0
         if randResult==4: # BEN MESAJINI ALMADIM ACK ARTMAYACAK
             newm = message(m.ack,self.LastSentMessage.ack,self.dl, 0)
             self.losePoint()
@@ -116,7 +117,7 @@ class User:
                         self.LastSentMessage=message(seq,ack,dl,0)
                 return self.LastSentMessage
             except inputimeout.TimeoutOccurred:
-                print('Sorry, time is up. You lost a point.\nSending last message') # PUAN KAYBEDECEK
+                print('Sorry, time is up. You lost a point.') # PUAN KAYBEDECEK
                 print(f'Sending message {self.LastSentMessage}')
                 self.losePoint()
                 return self.LastSentMessage

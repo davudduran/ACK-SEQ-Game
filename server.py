@@ -9,6 +9,8 @@ def Main():
     s.bind((host, port))
     c = toolbox.Computer('Server',77,True)
     print("Server Started\nWaiting for client to start conversation.")
+
+    first = True
     while True:
         #GET MESSAGE
         data, addr = s.recvfrom(1024)
@@ -16,9 +18,14 @@ def Main():
         #print("\nFrom: " + str(addr))
         toolbox.time.sleep(0.5)
 
-        if data.data == 1:
+        if not first and data.data == 1:
             print("User lost.")
             break
+
+        if first:
+            autoMode = data.data == 1
+            c.autoMode = autoMode
+            first = False
 
         #CREATE ANSWER
         m = c.receiveMessage(data)

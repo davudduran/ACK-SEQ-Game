@@ -4,7 +4,7 @@ def Main():
 
     host=socket.gethostbyname(socket.gethostname()) #client ip
     port = 42451
-    server = ('192.168.1.155', 42069)
+    server = ('192.168.1.137', 42069)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind((host,port))
     autoMode = toolbox.TFMap.get(input("1. Manual\n2. Automatic\n\nPlease choose a game mode: "))
@@ -13,7 +13,7 @@ def Main():
     else:
         c = toolbox.User()
     print("Game starts with you sending\nSeq:0 Ack:0 DL: 10")
-    m = toolbox.message(0,0,10,0)
+    m = toolbox.message(0,0,10,1 if autoMode else 0)
     while c.points != 0:
         #CREATE ANSWER pt2
         m = pickle.dumps(m)
@@ -22,7 +22,6 @@ def Main():
         #GET MESSAGE
         data, _ = s.recvfrom(1024)
         data = pickle.loads(data)
-        print(data)
 
         if data == None and not autoMode: 
             c.timeout(60) # TIMEOUT SURESINI 60 YAP
