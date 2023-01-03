@@ -15,8 +15,8 @@ def Main():
         #GET MESSAGE
         data, addr = s.recvfrom(1024)
         data = pickle.loads(data)
-        print("\nFrom: " + str(addr))
-        toolbox.time.sleep(3)
+        #print("\nFrom: " + str(addr))
+        toolbox.time.sleep(0.5)
 
         if data.data == 1:
             print("User lost.")

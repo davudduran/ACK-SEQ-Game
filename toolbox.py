@@ -70,19 +70,19 @@ class Computer:
 
     def receiveMessage(self,m):
         print('\n'+self.name)
+        print(f"ReceivedMessage SEQ:{m.seq} ACK:{m.ack} DL:{m.dl}")
         self.checkMessage(m)
-        randResult = random.randint(0,1)
+        randResult = 0
         if randResult==4: # BEN MESAJINI ALMADIM ACK ARTMAYACAK
             newm = message(m.ack,self.LastSentMessage.ack,self.dl, 0)
             self.losePoint()
         elif randResult==0: # TIMEOUT ATCAK AFK TAKILCAK MESAJ YOK # SU AN CALISTIRAMADIGIMIZ ICIN COMMENT
-            time.sleep(20)
-            newm=message(m.ack, m.seq + m.dl, self.dl, 0)
+            newm = None
         else:
             newm = message(m.ack, m.seq + m.dl, self.dl, 0)
-
+            print(f"Sending Message SEQ:{newm.seq} ACK:{newm.ack} DL:{newm.dl}")
+        
         self.LastSentMessage=newm
-        print(f"Sending Message SEQ:{newm.seq} ACK:{newm.ack} DL:{newm.dl}")
         self.LastReceivedMessage=m
         return newm
     
@@ -101,10 +101,10 @@ class User:
             response = TFMap.get(inputimeout.inputimeout(prompt='\nIs it time out?: ', timeout=15).strip().lower())
             if not response:
                 print("It was timeout, you lost point.")
-                c.losePoint()
+                self.losePoint()
         except inputimeout.TimeoutOccurred:
             print('Timeout span passed, you lost point.')
-            c.losePoint()
+            self.losePoint()
         finally:
             return self.LastSentMessage
 
@@ -123,27 +123,36 @@ class User:
             self.points = 5
 
     def receiveMessage(self,m):
-        print(f"\nReceivedMessage SEQ:{m.seq} ACK:{m.ack} DL:{m.dl}")
-        correctAnswer = message(self.LastSentMessage.ack,self.LastSentMessage.seq+self.LastSentMessage.dl,80, 0)
-        while True:
-            isCorrect = TFMap.get(input('Is that response correct? Y\\N: ').strip().lower()) # Her cevaptan sonra True/False istedi hoca puan kontrolu icin 01:14:45'te
-            if isCorrect is not None:
-                break
-            print("Invalid answer.")
-        if not isCorrect and correctAnswer.seq == m.seq and correctAnswer.ack == m.ack:
-            print('Wrong, answer was correct.')
-            self.losePoint()
-        elif isCorrect and correctAnswer.seq != m.seq:
-            print(f"Wrong, SEQ should be {correctAnswer.seq}.")
-            self.losePoint()
-        elif isCorrect and correctAnswer.ack != m.ack:
-            print(f'Wrong, ACK was supposed to be {correctAnswer.ack}.')
-            self.losePoint()
+        """if m == None:
+            print("Sending the last packet again.")
+            return self.LastSentMessage"""
+        if m != None:
+            print(f"\nReceivedMessage SEQ:{m.seq} ACK:{m.ack} DL:{m.dl}")
+            correctAnswer = message(self.LastSentMessage.ack,self.LastSentMessage.seq+self.LastSentMessage.dl,80, 0)
+            while True:
+                isCorrect = TFMap.get(input('Is that response correct? Y\\N: ').strip().lower()) # Her cevaptan sonra True/False istedi hoca puan kontrolu icin 01:14:45'te
+                if isCorrect is not None:
+                    break
+                print("Invalid answer.")
+            if not isCorrect and correctAnswer.seq == m.seq and correctAnswer.ack == m.ack:
+                print('Wrong, answer was correct.')
+                self.losePoint()
+            elif isCorrect and correctAnswer.seq != m.seq:
+                print(f"Wrong, SEQ should be {correctAnswer.seq}.")
+                self.losePoint()
+            elif isCorrect and correctAnswer.ack != m.ack:
+                print(f'Wrong, ACK was supposed to be {correctAnswer.ack}.')
+                self.losePoint()
 
         if self.points != 0:
             try:
                 seq,ack,dl = map(int, [i.strip() for i in inputimeout.inputimeout(prompt='Enter SEQ ACK DL: ', timeout=1500).strip().split(' ') if i.strip()])
-                self.LastSentMessage=message(seq,ack,dl,0)
+                if m == None:
+                    if seq != self.LastSentMessage.seq or ack != self.LastSentMessage.ack or dl != self.LastSentMessage.dl:
+                        print("Wrong, the message should be the same with the last sent one.")
+                        self.losePoint()
+                else:
+                    self.LastSentMessage=message(seq,ack,dl,0)
                 return self.LastSentMessage
             except inputimeout.TimeoutOccurred:
                 print('Sorry, times up.') # PUAN KAYBEDECEK
