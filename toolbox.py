@@ -23,8 +23,6 @@ class Computer:
         print('\n'+self.name)
         if m.dl != 0:
             print(f"ReceivedMessage SEQ:{m.seq} ACK:{m.ack} DL:{m.dl}")
-        #self.checkMessage(m)
-        #randResult = random.randint(0,4)
         randResult = 0
         if randResult==4: # BEN MESAJINI ALMADIM ACK ARTMAYACAK
             newm = message(m.ack,self.LastSentMessage.ack,self.dl, 0)

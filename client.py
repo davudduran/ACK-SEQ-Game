@@ -4,7 +4,7 @@ def Main():
 
     host=socket.gethostbyname(socket.gethostname()) #client ip
     port = 42451
-    server = ('192.168.1.137', 42069)
+    server = ('192.168.1.155', 42069)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind((host,port))
     autoMode = toolbox.TFMap.get(input("1. Manual\n2. Automatic\n\nPlease choose a game mode: "))
@@ -24,7 +24,7 @@ def Main():
         data = pickle.loads(data)
 
         if data == None and not autoMode: 
-            c.timeout(60) # TIMEOUT SURESINI 60 YAP
+            c.timeout(20) # TIMEOUT SURESINI 60 YAP
         m = c.receiveMessage(data)
         
     print("User lost.")
