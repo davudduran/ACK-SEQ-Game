@@ -1,6 +1,4 @@
-import socket
-import toolbox
-import pickle
+import socket,toolbox,pickle
 
 def Main():
 
@@ -9,7 +7,7 @@ def Main():
 
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind((host, port))
-    c = toolbox.Computer('Server',77)
+    c = toolbox.Computer('Server',77,True)
     print("Server Started\nWaiting for client to start conversation.")
     while True:
         #GET MESSAGE

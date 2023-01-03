@@ -1,8 +1,4 @@
-import socket
-import time
-import toolbox
-import pickle
-import select
+import socket,toolbox,pickle
 
 def Main():
 
@@ -13,7 +9,7 @@ def Main():
     s.bind((host,port))
     autoMode = toolbox.TFMap.get(input("1. Manual\n2. Automatic\n\nPlease choose a game mode: "))
     if autoMode:
-        c = toolbox.Computer("ClientAuto",10)
+        c = toolbox.Computer("ClientAuto",10,autoMode)
     else:
         c = toolbox.User()
     print("Game starts with you sending\nSeq:0 Ack:0 DL: 10")
@@ -26,8 +22,9 @@ def Main():
         #GET MESSAGE
         data, _ = s.recvfrom(1024)
         data = pickle.loads(data)
+        print(data)
 
-        if data == None: 
+        if data == None and not autoMode: 
             c.timeout(60) # TIMEOUT SURESINI 60 YAP
         m = c.receiveMessage(data)
         

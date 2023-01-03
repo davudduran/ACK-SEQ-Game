@@ -1,8 +1,5 @@
-import os
-import pyautogui
-import time
+import os,pyautogui,time,sys
 from pathlib import Path
-import sys
 
 parent = Path(__file__).parent
 server_path = parent.joinpath("server.py")
