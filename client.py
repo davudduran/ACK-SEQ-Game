@@ -1,15 +1,20 @@
 import socket
+import time
 import toolbox
 import pickle
+import select
 
 def Main():
 
     host=socket.gethostbyname(socket.gethostname()) #client ip
     port = 42451
-    server = ('192.168.1.137', 42069)
-
+    server = ('192.168.1.155', 42069)
+    lastSentMessageTime = time.time()
+    time_since = time.time()-lastSentMessageTime
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind((host,port))
+    ready = select.select([s],[],[],0.1)
+    s.setblocking(0)
     autoMode = toolbox.TFMap.get(input("1. Manual\n2. Automatic\n\nPlease choose a game mode: "))
     if autoMode:
         c = toolbox.Computer("ClientAuto",10)
@@ -18,18 +23,32 @@ def Main():
         c = toolbox.User()
 
     m = toolbox.message(0,0,0,0)
+    m = pickle.dumps(m)
+    s.sendto(m,server)
     while c.points != 0:
         #CREATE ANSWER pt2
-        m = pickle.dumps(m)
-        s.sendto(m, server)
+        if ready[0]:
+            m = pickle.dumps(m)
+            lastSentMessageTime=time.time()
+            time_since=0
+            s.sendto(m, server)
+            
 
         #GET MESSAGE
-        data, addr = s.recvfrom(1024)
-        data = pickle.loads(data)
-        toolbox.time.sleep(0.5)
+        ready = select.select([s],[],[],0.5)
+        print(time_since)
+        if ready[0]:
+            data, addr = s.recvfrom(1024)
+            data = pickle.loads(data)
+            m = c.receiveMessage(data)
+        else:
+            time_since=time.time()-lastSentMessageTime
+            if time_since>5:
+                m = c.timeout()
+        
 
-        m = c.receiveMessage(data)
-    
+        
+    # HOCAM SIZ GAE
     print("User lost.")
     a = toolbox.message(0, 0, 0, 1)
     a = pickle.dumps(a)

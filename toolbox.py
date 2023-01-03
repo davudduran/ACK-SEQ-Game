@@ -71,11 +71,13 @@ class Computer:
     def receiveMessage(self,m):
         print('\n'+self.name)
         self.checkMessage(m)
-        randResult = random.randint(0,4)
-        if randResult==5: # BEN MESAJINI ALMADIM ACK ARTMAYACAK
+        randResult = random.randint(0,1)
+        if randResult==4: # BEN MESAJINI ALMADIM ACK ARTMAYACAK
             newm = message(m.ack,self.LastSentMessage.ack,self.dl, 0)
             self.losePoint()
-        #elif randResult==9: # TIMEOUT ATCAK AFK TAKILCAK MESAJ YOK # SU AN CALISTIRAMADIGIMIZ ICIN COMMENT
+        elif randResult==0: # TIMEOUT ATCAK AFK TAKILCAK MESAJ YOK # SU AN CALISTIRAMADIGIMIZ ICIN COMMENT
+            time.sleep(20)
+            newm=message(m.ack, m.seq + m.dl, self.dl, 0)
         else:
             newm = message(m.ack, m.seq + m.dl, self.dl, 0)
 
@@ -91,8 +93,20 @@ class Computer:
 class User:
     def __init__(self):
         self.LastSentMessage = message(0,0,0,0)
-        self.LastReceivedMessage = message(0,0,0, 0)
+        self.LastReceivedMessage = message(0,0,0,0)
         self.initPoints()
+
+    def timeout(self):
+        try:
+            response = TFMap.get(inputimeout.inputimeout(prompt='\nIs it time out?: ', timeout=15).strip().lower())
+            if not response:
+                print("It was timeout, you lost point.")
+                c.losePoint()
+        except inputimeout.TimeoutOccurred:
+            print('Timeout span passed, you lost point.')
+            c.losePoint()
+        finally:
+            return self.LastSentMessage
 
     def initPoints(self):
         i = input("Point count: ").strip()
