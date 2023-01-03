@@ -1,5 +1,4 @@
 import time
-import sys
 import inputimeout
 import random
  
@@ -21,7 +20,9 @@ TFMap = {'1':False,
          't':True,
          'f':False,
          'y':True,
-         'n':False,}
+         'n':False,
+         'no':False,
+         'yes':True}
 
 def main(): # ISE YARAMAZ SU ANDA
     # 0 : Normal Messaging between computers
@@ -55,7 +56,7 @@ class Computer:
         self.LastSentMessage = message(0,0,0,0) # to check values
         self.LastReceivedMessage = message(0,0,0,0)
         self.seqError=False
-        self.points = 1
+        self.points = 3
 
     def checkMessage(self,m):
         if m.dl != 0:
@@ -91,44 +92,63 @@ class User:
     def __init__(self):
         self.LastSentMessage = message(0,0,0,0)
         self.LastReceivedMessage = message(0,0,0, 0)
-        self.points = 1
+        self.initPoints()
+
+    def initPoints(self):
+        i = input("Point count: ").strip()
+        try:
+            int_i = int(i)
+
+            if int_i < 1:
+                print("Invalid count. Set to default points of 5.")
+                self.points = 5
+            else:
+                self.points = int_i
+        except ValueError:
+            print("Invalid count. Set to default points of 5.")
+            self.points = 5
 
     def receiveMessage(self,m):
         print(f"\nReceivedMessage SEQ:{m.seq} ACK:{m.ack} DL:{m.dl}")
         correctAnswer = message(self.LastSentMessage.ack,self.LastSentMessage.seq+self.LastSentMessage.dl,80, 0)
-        isCorrect = TFMap.get(input('Is that response correct?Y\\N \n').lower()) # Her cevaptan sonra True/False istedi hoca puan kontrolu icin 01:14:45'te
-        if isCorrect and correctAnswer.seq != m.seq:
-            print(f"Wrong, sequence number should be {correctAnswer.seq}.")
-            self.losePoint()
+        while True:
+            isCorrect = TFMap.get(input('Is that response correct? Y\\N: ').strip().lower()) # Her cevaptan sonra True/False istedi hoca puan kontrolu icin 01:14:45'te
+            if isCorrect is not None:
+                break
+            print("Invalid answer.")
         if not isCorrect and correctAnswer.seq == m.seq and correctAnswer.ack == m.ack:
-            print('Wrong, answer was correct')
+            print('Wrong, answer was correct.')
+            self.losePoint()
+        elif isCorrect and correctAnswer.seq != m.seq:
+            print(f"Wrong, SEQ should be {correctAnswer.seq}.")
             self.losePoint()
         elif isCorrect and correctAnswer.ack != m.ack:
-            print(f'Wrong, ack was supposed to be {correctAnswer.ack}')
+            print(f'Wrong, ACK was supposed to be {correctAnswer.ack}.')
             self.losePoint()
-        try:
-            seq,ack,dl,syn = map(int, inputimeout.inputimeout(prompt='Enter Seq Ack Dl\nFormat: SS AA DD SYN: ', timeout=1500).split(' '))
-            self.LastSentMessage=message(seq,ack,dl,0)
-            return self.LastSentMessage
-        except inputimeout.TimeoutOccurred:
-            print('Sorry, times up') # PUAN KAYBEDECEK
-            self.losePoint()
-        else:
-            pass
+
+        if self.points != 0:
+            try:
+                seq,ack,dl = map(int, [i.strip() for i in inputimeout.inputimeout(prompt='Enter SEQ ACK DL: ', timeout=1500).strip().split(' ') if i.strip()])
+                self.LastSentMessage=message(seq,ack,dl,0)
+                return self.LastSentMessage
+            except inputimeout.TimeoutOccurred:
+                print('Sorry, times up.') # PUAN KAYBEDECEK
+                self.losePoint()
 
     def losePoint(self):
         self.points -= 1
+        print("Remaining points: {}".format(self.points))
 
 
 class message:
-    def __init__(self,seq,ack,dl,syn):
+    def __init__(self,seq,ack,dl,data):
         self.seq=seq
         self.ack=ack
         self.dl=dl
-        self.syn = 0 
+        self.data=data
 
     def __str__(self):
-        return 'seq:{}ack:{}dl:{}syn:{}'.format(self.seq,self.ack,self.dl,self.syn)
+        return 'seq:{}ack:{}dl:{}data:{}'.format(self.seq,self.ack,self.dl,self.data)
 
 if __name__=='__main__':
     c=Computer('TEST')
